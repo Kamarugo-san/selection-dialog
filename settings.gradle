@@ -1,0 +1,3 @@
+include ':selectiondialog'
+include ':app'
+rootProject.name = "selection-dialog"

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="selection_dialog_query_hint">Digite para pesquisar</string>
+    <string name="selection_dialog_search_no_matches">Nenhum resultado encontrado</string>
+    <string name="selection_dialog_search_as_selection">Pressione ENTER para usar o texto pesquisado</string>
+    <string name="selection_dialog_cancel_btn">Cancelar</string>
+</resources>
