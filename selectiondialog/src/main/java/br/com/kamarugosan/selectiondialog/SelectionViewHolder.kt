@@ -10,6 +10,7 @@ class SelectionViewHolder(itemView: View, private val listener: SelectionItemCli
 
     fun bind(item: SelectionOption, isSelected: Boolean) {
         radioButton.text = item.text
+        radioButton.isEnabled = item.enabled
 
         // Removing listener because there'll be a change on checked state. We don't want to
         // trigger the action when binding the info to the views

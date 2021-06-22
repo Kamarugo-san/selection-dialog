@@ -24,7 +24,7 @@
         android:layout_margin="16dp"
         android:paddingTop="16dp"
         android:paddingBottom="16dp"
-        android:text="@string/selection_dialog_search_no_matches"
+        android:text="@string/selection_dialog_empty"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
         android:visibility="gone" />

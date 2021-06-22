@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="selection_dialog_query_hint">Type to search</string>
+    <string name="selection_dialog_empty">Empty list</string>
     <string name="selection_dialog_search_no_matches">No matches found</string>
     <string name="selection_dialog_search_as_selection">Press ENTER to use the search text</string>
     <string name="selection_dialog_cancel_btn">Cancel</string>
+    <string name="selection_dialog_confirm_btn">Confirm</string>
 </resources>
