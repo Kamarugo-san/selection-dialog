@@ -1,4 +1,4 @@
-package br.com.kamarugosan.selectiondialog
+package br.com.kamarugosan.selectiondialog.multiple
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -12,34 +12,30 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.RecyclerView
-import java.util.*
+import br.com.kamarugosan.selectiondialog.R
+import br.com.kamarugosan.selectiondialog.SelectionItemClearedListener
+import br.com.kamarugosan.selectiondialog.SelectionOption
 
 @SuppressLint("ClickableViewAccessibility")
-class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInterface {
+class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInterface {
     private val dataSet: List<T> = builder.dataSet
-    private val selectionListener: ItemSelectionListener<T> = builder.selectionListener
+    private val selectionListener: MultipleItemSelectionListener<T> = builder.selectionListener
     private val editText: EditText? = builder.editText
     private val clearedListener: SelectionItemClearedListener? = builder.clearedListener
     private val dialog: AlertDialog
-    private val adapter: SelectionAdapter
+    private val adapter: MultipleSelectionAdapter
+    private var selectedIndexes = builder.selectedIndexes
 
     class Builder<T>(
         internal val context: Context,
         internal val dataSet: List<T>,
-        internal val selectionListener: ItemSelectionListener<T>
+        internal val selectionListener: MultipleItemSelectionListener<T>
     ) {
         internal var allowSearch = false
         internal var title: String? = null
-        internal var dialogCancelable = false
-        internal var showCancelButton = false
-        internal var selectedItem: T? = null
+        internal var selectedIndexes: List<Int> = ArrayList()
         internal var editText: EditText? = null
         internal var clearedListener: SelectionItemClearedListener? = null
-
-        internal var searchTextAsSelectionListener: SearchTextAsSelectionListener? = null
-
-        internal var searchTextAsSelectionLabel =
-            context.getString(R.string.selection_dialog_search_as_selection)
 
         fun allowSearch(allowSearch: Boolean) = apply { this.allowSearch = allowSearch }
 
@@ -51,49 +47,27 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
 
         fun setTitle(title: String?) = apply { this.title = title }
 
-        fun setDialogCancelable(dialogCancelable: Boolean) =
-            apply { this.dialogCancelable = dialogCancelable }
+        fun setSelectedIndexes(selectedIndexes: List<Int>) = apply {
+            this.selectedIndexes = ArrayList(selectedIndexes)
+        }
 
-        fun setShowCancelButton(showCancelButton: Boolean) =
-            apply { this.showCancelButton = showCancelButton }
-
-        fun setSelectedItem(selectedItem: T?) = apply { this.selectedItem = selectedItem }
-
-        @JvmOverloads
-        fun allowSearchTextAsSelection(
-            searchTextAsSelectionListener: SearchTextAsSelectionListener,
-            searchTextAsSelectionLabel: String = context.getString(R.string.selection_dialog_search_as_selection)
-        ) =
-            apply {
-                this.searchTextAsSelectionListener = searchTextAsSelectionListener
-                this.searchTextAsSelectionLabel = searchTextAsSelectionLabel
-            }
-
-        fun build(): SelectionDialog<T> = SelectionDialog(this)
+        fun build(): MultipleSelectionDialog<T> = MultipleSelectionDialog(this)
     }
 
     init {
         val selectionOptions: MutableList<SelectionOption> = ArrayList()
-        var selectedItem: Int? = null
+        val selectedItems: MutableList<SelectionOption> = ArrayList()
         dataSet.forEachIndexed { index, item ->
-            selectionOptions.add(SelectionOption(index, item!!))
+            val option = SelectionOption(index, item!!)
+            selectionOptions.add(option)
 
-            if (builder.selectedItem != null && builder.selectedItem == item) {
-                selectedItem = index
+            if (builder.selectedIndexes.contains(option.index)) {
+                selectedItems.add(option)
             }
         }
 
-        adapter = SelectionAdapter(selectionOptions, object : SelectionItemClickListener {
-            override fun onSelect(position: Int) {
-                val item: T = builder.dataSet[position]
-                selectionListener.onSelected(item, position)
-
-                configureEditTextSelection(item.toString())
-
-                dismiss()
-            }
-        })
-        adapter.selectedItem = selectedItem
+        adapter = MultipleSelectionAdapter(selectionOptions)
+        adapter.selectedIndexes = ArrayList(builder.selectedIndexes)
 
         val dialogView =
             LayoutInflater.from(builder.context).inflate(R.layout.dialog_selection, null, false)
@@ -101,11 +75,41 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
         val dialogBuilder = AlertDialog.Builder(builder.context)
             .setTitle(builder.title)
             .setView(dialogView)
-            .setCancelable(builder.dialogCancelable)
+            .setCancelable(false)
+            .setNegativeButton(R.string.selection_dialog_cancel_btn) { _, _ ->
+                if (selectedIndexes.size != adapter.selectedIndexes.size
+                    || !adapter.selectedIndexes.containsAll(selectedIndexes)
+                ) {
+                    val oldSelectedIndexes = ArrayList(adapter.selectedIndexes)
+                    adapter.selectedIndexes = ArrayList(selectedIndexes)
 
-        if (builder.showCancelButton) {
-            dialogBuilder.setNeutralButton(R.string.selection_dialog_cancel_btn, null)
-        }
+                    // Updating the views that were deselected
+                    selectedIndexes.forEach { index ->
+                        if (!oldSelectedIndexes.contains(index)) {
+                            adapter.notifyItemChanged(index)
+                        }
+                    }
+
+                    // Updating the views that were selected
+                    oldSelectedIndexes.forEach { index ->
+                        if (!selectedIndexes.contains(index)) {
+                            adapter.notifyItemChanged(index)
+                        }
+                    }
+                }
+            }
+            .setPositiveButton(R.string.selection_dialog_confirm_btn) { _, _ ->
+                selectedIndexes = ArrayList(adapter.selectedIndexes)
+                val selected: MutableList<T> = ArrayList()
+                val selectedOptions: MutableList<SelectionOption> = ArrayList()
+                selectedIndexes.forEach {
+                    selected.add(dataSet[it])
+                    selectedOptions.add(selectionOptions[it])
+                }
+
+                configureEditTextSelection(selectedOptions)
+                selectionListener.onSelected(selected)
+            }
 
         dialog = dialogBuilder.create()
 
@@ -124,22 +128,7 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
             val searchView: SearchView = dialogView.findViewById(R.id.selection_dialog_search_view)
             searchView.visibility = View.VISIBLE
             searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    if (builder.searchTextAsSelectionListener != null) {
-                        val searchText = query ?: ""
-                        builder.searchTextAsSelectionListener!!.onSearchTextUsedAsSelection(
-                            searchText
-                        )
-
-                        configureEditTextSelection(searchText)
-                        adapter.clearSelection()
-                        searchView.setQuery(null, false)
-
-                        dismiss()
-                    }
-
-                    return true
-                }
+                override fun onQueryTextSubmit(query: String?): Boolean = true
 
                 override fun onQueryTextChange(newText: String?): Boolean {
                     val remainingItemsCount = adapter.filter(newText)
@@ -154,14 +143,10 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
                     return true
                 }
             })
-
-            if (builder.searchTextAsSelectionListener != null) {
-                emptyListTv.text = builder.searchTextAsSelectionLabel
-            }
         }
 
         if (editText != null) {
-            configureEditTextSelection(builder.selectedItem?.toString())
+            configureEditTextSelection(selectedItems)
 
             editText.isFocusable = false
             editText.inputType = InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
@@ -177,31 +162,27 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
         dialog.dismiss()
     }
 
-    fun selectItem(itemToSelect: T) {
-        dataSet.forEachIndexed { index, item ->
-            if (itemToSelect == item) {
-                adapter.selectItem(index)
-                return@forEachIndexed
-            }
-        }
+    fun show() {
+        dialog.show()
     }
 
-    fun disableOption(index: Int) {
-        adapter.disableOption(index)
-    }
-
-    fun enableOption(index: Int) {
-        adapter.enableOption(index)
-    }
-
-    private fun configureEditTextSelection(selectedItem: String?) {
+    private fun configureEditTextSelection(selectedItems: List<SelectionOption>) {
         if (editText == null) {
             return
         }
 
-        editText.setText(selectedItem)
+        val selectionText = StringBuilder()
+        selectedItems.forEach {
+            if (selectionText.isNotEmpty()) {
+                selectionText.append(", ")
+            }
 
-        if (selectedItem != null && editText.isEnabled && clearedListener != null) {
+            selectionText.append(it.text)
+        }
+
+        editText.setText(selectionText.toString())
+
+        if (selectedItems.isNotEmpty() && editText.isEnabled && clearedListener != null) {
             editText.setCompoundDrawablesWithIntrinsicBounds(
                 0, 0, R.drawable.ic_action_clear, 0
             )
@@ -213,8 +194,9 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
                         editText.text = null
 
                         adapter.clearSelection()
+                        selectedIndexes = ArrayList()
                         clearedListener.onCleared()
-                        configureEditTextSelection(null)
+                        configureEditTextSelection(ArrayList())
 
                         return@setOnTouchListener true
                     }
@@ -228,17 +210,5 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
             )
             editText.setOnTouchListener { _, _ -> false }
         }
-    }
-
-    fun getSelectedItem(): T? {
-        if (adapter.selectedItem != null) {
-            return dataSet[adapter.selectedItem!!]
-        }
-
-        return null
-    }
-
-    fun show() {
-        dialog.show()
     }
 }

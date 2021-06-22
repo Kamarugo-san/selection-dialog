@@ -13,32 +13,19 @@ class SelectionAdapter(
     RecyclerView.Adapter<SelectionViewHolder>() {
     private var filteredDataSet: List<SelectionOption> = ArrayList(fullDataSet)
     var selectedItem: Int? = null
+    var lastFilter: String? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SelectionViewHolder {
         return SelectionViewHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.item_selection, parent, false),
             object : SelectionItemClickListener {
                 override fun onSelect(position: Int) {
-                    val oldSelectedItem = selectedItem
-                    selectedItem = position
-
-                    if (oldSelectedItem != null) {
-                        notifyItemChanged(oldSelectedItem)
-                    }
+                    selectItem(position, false)
 
                     selectionListener.onSelect(position)
                 }
             }
         )
-    }
-
-    fun deselect() {
-        if (selectedItem != null) {
-            val oldSelectedItem = selectedItem!!
-            selectedItem = null
-
-            notifyItemChanged(oldSelectedItem)
-        }
     }
 
     override fun onBindViewHolder(holder: SelectionViewHolder, position: Int) {
@@ -50,6 +37,47 @@ class SelectionAdapter(
 
     override fun getItemCount(): Int = filteredDataSet.size
 
+    fun selectItem(index: Int, notifySelectedView: Boolean = true) {
+        val oldSelectedItem = selectedItem
+        selectedItem = index
+
+        if (oldSelectedItem != null) {
+            notifyItemChanged(oldSelectedItem)
+        }
+
+        if (notifySelectedView) {
+            notifyItemChanged(index)
+        }
+    }
+
+    fun disableOption(index: Int) {
+        fullDataSet[index].enabled = false
+        notifyByOptionIndex(index)
+    }
+
+    fun enableOption(index: Int) {
+        fullDataSet[index].enabled = true
+        notifyByOptionIndex(index)
+    }
+
+    private fun notifyByOptionIndex(index: Int) {
+        filteredDataSet.forEachIndexed { i, selectionOption ->
+            if (selectionOption.index == index) {
+                notifyItemChanged(i)
+                return@forEachIndexed
+            }
+        }
+    }
+
+    fun clearSelection() {
+        if (selectedItem != null) {
+            val oldSelectedItem = selectedItem!!
+            selectedItem = null
+
+            notifyItemChanged(oldSelectedItem)
+        }
+    }
+
     fun filter(filter: String?): Int {
         filteredDataSet = if (filter == null || filter.isEmpty()) {
             ArrayList(fullDataSet)
@@ -57,7 +85,17 @@ class SelectionAdapter(
             val clearedFilter = filter.toLowerCase(Locale.getDefault()).unaccent()
             val newFilteredDataSet: MutableList<SelectionOption> = ArrayList()
 
-            fullDataSet.forEach {
+            var dataSetToFilter = fullDataSet
+
+            lastFilter?.apply {
+                // Optimizing search by reducing the set to filter if the new one is a continuation
+                // of the last.
+                if (this.isNotEmpty() && filter.startsWith(this)) {
+                    dataSetToFilter = filteredDataSet
+                }
+            }
+
+            dataSetToFilter.forEach {
                 if (it.filterText.contains(clearedFilter)) {
                     newFilteredDataSet.add(it)
                 }
@@ -65,6 +103,8 @@ class SelectionAdapter(
 
             newFilteredDataSet
         }
+
+        lastFilter = filter
 
         notifyDataSetChanged()
         return filteredDataSet.size

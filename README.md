@@ -1,5 +1,28 @@
+![Release](https://jitpack.io/v/Kamarugo-san/selection-dialog.svg)
+![License](https://img.shields.io/github/license/Kamarugo-san/selection-dialog)
+
 # Selection Dialog
 Easily show a dialog with options for the user to choose from.
+
+## Adding to your project
+**Step 1:** Add the JitPack repository to your root build.gradle file
+
+```
+allprojects {
+    repositories {
+        // ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+**Step 2:** Add the selection-dialog dependency to your build.gradle file
+
+```
+dependencies {
+    implementation 'com.github.Kamarugo-san:selection-dialog:0.2.0'
+}
+```
 
 ## License
 ```
