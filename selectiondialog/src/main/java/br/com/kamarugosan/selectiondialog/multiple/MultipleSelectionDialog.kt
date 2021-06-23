@@ -58,7 +58,7 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
         val selectionOptions: MutableList<SelectionOption> = ArrayList()
         val selectedItems: MutableList<SelectionOption> = ArrayList()
         dataSet.forEachIndexed { index, item ->
-            val option = SelectionOption(index, item!!)
+            val option = SelectionOption(index, item!!, builder.context)
             selectionOptions.add(option)
 
             if (builder.selectedIndexes.contains(option.index)) {

@@ -1,8 +1,6 @@
 package br.com.kamarugosan.selectiondialog.example
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import br.com.kamarugosan.selectiondialog.ItemSelectionListener
@@ -66,6 +64,46 @@ class ExampleActivity : AppCompatActivity(R.layout.activity_example) {
                 }
             })
             .build()
+
+        val exampleInput2 = findViewById<TextInputEditText>(R.id.example_selection2_input)
+        MultipleSelectionDialog.Builder(
+            this,
+            ExampleEnum.values().toList(),
+            object : MultipleItemSelectionListener<ExampleEnum> {
+                override fun onSelected(items: List<ExampleEnum>) {
+                    Toast.makeText(this@ExampleActivity, "MULTIPLE SELECTED", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+        )
+            .bindToEditText(exampleInput2, object : SelectionItemClearedListener {
+                override fun onCleared() {
+                    Toast.makeText(this@ExampleActivity, "CLEARED MULTIPLE", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            })
+            .setTitle(getString(R.string.example_selection_2))
+            .build()
+
+        /*
+        SelectionDialog.Builder(
+            this,
+            ExampleEnum.values().toList(),
+            object : ItemSelectionListener<ExampleEnum> {
+                override fun onSelected(item: ExampleEnum, index: Int) {
+                    Toast.makeText(this@ExampleActivity, item.toStringWithContext(this@ExampleActivity), Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+            .bindToEditText(exampleInput2, object : SelectionItemClearedListener {
+                override fun onCleared() {
+                    Toast.makeText(this@ExampleActivity, "CLEARED", Toast.LENGTH_SHORT).show()
+                }
+            })
+            .setShowCancelButton(true)
+            .setTitle(getString(R.string.example_selection_2))
+            .build()
+        */
 
         val exampleMultipleInput1 =
             findViewById<TextInputEditText>(R.id.example_multiple_selection_input)

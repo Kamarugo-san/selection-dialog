@@ -22,7 +22,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/example_multiple_selection_input_layout"
+        android:id="@+id/example_selection2_input_layout"
         style="@style/Widget.TextInputLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -30,6 +30,23 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/example_selection_input_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/example_selection2_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/example_selection_2" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/example_multiple_selection_input_layout"
+        style="@style/Widget.TextInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/example_selection2_input_layout">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/example_multiple_selection_input"
