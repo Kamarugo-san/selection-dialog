@@ -76,7 +76,7 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
         val selectionOptions: MutableList<SelectionOption> = ArrayList()
         var selectedItem: Int? = null
         dataSet.forEachIndexed { index, item ->
-            selectionOptions.add(SelectionOption(index, item!!))
+            selectionOptions.add(SelectionOption(index, item!!, builder.context))
 
             if (builder.selectedItem != null && builder.selectedItem == item) {
                 selectedItem = index
@@ -88,7 +88,7 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
                 val item: T = builder.dataSet[position]
                 selectionListener.onSelected(item, position)
 
-                configureEditTextSelection(item.toString())
+                configureEditTextSelection(selectionOptions[position].text)
 
                 dismiss()
             }
