@@ -51,13 +51,17 @@ class SelectionAdapter(
     }
 
     fun disableOption(index: Int) {
-        fullDataSet[index].enabled = false
-        notifyByOptionIndex(index)
+        if (fullDataSet[index].enabled) {
+            fullDataSet[index].enabled = false
+            notifyByOptionIndex(index)
+        }
     }
 
     fun enableOption(index: Int) {
-        fullDataSet[index].enabled = true
-        notifyByOptionIndex(index)
+        if (!fullDataSet[index].enabled) {
+            fullDataSet[index].enabled = true
+            notifyByOptionIndex(index)
+        }
     }
 
     private fun notifyByOptionIndex(index: Int) {
