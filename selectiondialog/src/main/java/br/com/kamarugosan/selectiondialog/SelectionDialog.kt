@@ -30,7 +30,7 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
     ) {
         internal var allowSearch = false
         internal var title: String? = null
-        internal var dialogCancelable = false
+        internal var dialogCancelable = true
         internal var showCancelButton = false
         internal var selectedItem: T? = null
         internal var editText: EditText? = null
@@ -181,6 +181,9 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
         dataSet.forEachIndexed { index, item ->
             if (itemToSelect == item) {
                 adapter.selectItem(index)
+
+                configureEditTextSelection(item.toString())
+
                 return@forEachIndexed
             }
         }
