@@ -189,6 +189,15 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
         }
     }
 
+    fun clearSelection(callClearedListener: Boolean = true) {
+        adapter.clearSelection()
+        configureEditTextSelection(null)
+
+        if (callClearedListener && clearedListener != null) {
+            clearedListener.onCleared()
+        }
+    }
+
     fun disableOption(index: Int) {
         adapter.disableOption(index)
     }
