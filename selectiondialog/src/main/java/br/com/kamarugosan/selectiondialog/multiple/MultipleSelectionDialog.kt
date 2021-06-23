@@ -166,6 +166,16 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
         dialog.show()
     }
 
+    fun clearSelection(callClearedListener: Boolean = true) {
+        adapter.clearSelection()
+        selectedIndexes = ArrayList()
+        configureEditTextSelection(ArrayList())
+
+        if (callClearedListener && clearedListener != null) {
+            clearedListener.onCleared()
+        }
+    }
+
     private fun configureEditTextSelection(selectedItems: List<SelectionOption>) {
         if (editText == null) {
             return
