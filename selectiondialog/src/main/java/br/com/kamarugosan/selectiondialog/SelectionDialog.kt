@@ -17,7 +17,7 @@ import java.util.*
 @SuppressLint("ClickableViewAccessibility")
 class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInterface {
     private val dataSet: List<T> = builder.dataSet
-    private val selectionListener: ItemSelectionListener<T> = builder.selectionListener
+    private val selectionListener: SelectionListener<T> = builder.selectionListener
     private val editText: EditText? = builder.editText
     private val clearedListener: SelectionItemClearedListener? = builder.clearedListener
     private val dialog: AlertDialog
@@ -26,8 +26,17 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
     class Builder<T>(
         internal val context: Context,
         internal val dataSet: List<T>,
-        internal val selectionListener: ItemSelectionListener<T>
+        internal val selectionListener: SelectionListener<T>
     ) {
+        constructor(context: Context, dataSet: List<T>, selectionListener: (T, Int) -> Unit) : this(
+            context,
+            dataSet,
+            object : SelectionListener<T> {
+                override fun onSelected(item: T, index: Int) {
+                    selectionListener(item, index)
+                }
+            })
+
         internal var allowSearch = false
         internal var title: String? = null
         internal var dialogCancelable = true
@@ -49,6 +58,13 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
                 this.clearedListener = clearedListener
             }
 
+        fun bindToEditText(editText: EditText, onClearedListener: () -> Unit) =
+            bindToEditText(editText, object : SelectionItemClearedListener {
+                override fun onCleared() {
+                    onClearedListener()
+                }
+            })
+
         fun setTitle(title: String?) = apply { this.title = title }
 
         fun setDialogCancelable(dialogCancelable: Boolean) =
@@ -62,12 +78,30 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
         @JvmOverloads
         fun allowSearchTextAsSelection(
             searchTextAsSelectionListener: SearchTextAsSelectionListener,
-            searchTextAsSelectionLabel: String = context.getString(R.string.selection_dialog_search_as_selection)
+            searchTextAsSelectionLabel: String = this.searchTextAsSelectionLabel
         ) =
             apply {
                 this.searchTextAsSelectionListener = searchTextAsSelectionListener
                 this.searchTextAsSelectionLabel = searchTextAsSelectionLabel
             }
+
+        fun allowSearchTextAsSelection(
+            searchTextAsSelectionListener: (String) -> Unit
+        ) = allowSearchTextAsSelection(object : SearchTextAsSelectionListener {
+            override fun onSearchTextUsedAsSelection(searchText: String) {
+                searchTextAsSelectionListener(searchText)
+            }
+        }, searchTextAsSelectionLabel)
+
+        fun allowSearchTextAsSelection(
+            searchTextAsSelectionListener: (String) -> Unit,
+            searchTextAsSelectionLabel: String
+        ) =
+            allowSearchTextAsSelection(object : SearchTextAsSelectionListener {
+                override fun onSearchTextUsedAsSelection(searchText: String) {
+                    searchTextAsSelectionListener(searchText)
+                }
+            }, searchTextAsSelectionLabel)
 
         fun build(): SelectionDialog<T> = SelectionDialog(this)
     }
@@ -252,5 +286,13 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
 
     fun show() {
         dialog.show()
+    }
+
+    interface SelectionListener<T> {
+        fun onSelected(item: T, index: Int)
+    }
+
+    interface SearchTextAsSelectionListener {
+        fun onSearchTextUsedAsSelection(searchText: String)
     }
 }
