@@ -195,7 +195,15 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
         }
 
         if (editText != null) {
-            configureEditTextSelection(builder.selectedItem?.toString())
+            if (builder.selectedItem != null && builder.selectedItem is ToStringWithContext) {
+                configureEditTextSelection(
+                    (builder.selectedItem!! as ToStringWithContext).toStringWithContext(
+                        builder.context
+                    )
+                )
+            } else {
+                configureEditTextSelection(builder.selectedItem?.toString())
+            }
 
             editText.isFocusable = false
             editText.inputType = InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS

@@ -6,5 +6,5 @@
     <string name="string_res_example_online" translatable="false">Online</string>
     <string name="string_res_example_offline" translatable="false">Offline</string>
     <string name="string_res_example_idle" translatable="false">Idle</string>
-    <string name="string_res_example_invisible" translatable="false">invisible</string>
+    <string name="string_res_example_invisible" translatable="false">Invisible</string>
 </resources>

@@ -73,28 +73,29 @@ class ExampleActivity : AppCompatActivity(R.layout.activity_example) {
                         .show()
                 }
             })
+            .setSelectedIndexes(listOf(1, 2))
             .setTitle(getString(R.string.example_selection_2))
             .build()
 
-        /*
-        SelectionDialog.Builder(
-            this,
-            ExampleEnum.values().toList(),
-            object : ItemSelectionListener<ExampleEnum> {
-                override fun onSelected(item: ExampleEnum, index: Int) {
-                    Toast.makeText(this@ExampleActivity, item.toStringWithContext(this@ExampleActivity), Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
-            .bindToEditText(exampleInput2, object : SelectionItemClearedListener {
-                override fun onCleared() {
-                    Toast.makeText(this@ExampleActivity, "CLEARED", Toast.LENGTH_SHORT).show()
-                }
-            })
-            .setShowCancelButton(true)
-            .setTitle(getString(R.string.example_selection_2))
-            .build()
-        */
+//        SelectionDialog.Builder(
+//            this,
+//            ExampleEnum.values().toList(),
+//            object : SelectionDialog.SelectionListener<ExampleEnum> {
+//                override fun onSelected(item: ExampleEnum, index: Int) {
+//                    Toast.makeText(this@ExampleActivity, item.toStringWithContext(this@ExampleActivity), Toast.LENGTH_SHORT).show()
+//                }
+//            }
+//        )
+//            .bindToEditText(exampleInput2, object : SelectionItemClearedListener {
+//                override fun onCleared() {
+//                    Toast.makeText(this@ExampleActivity, "CLEARED", Toast.LENGTH_SHORT).show()
+//                }
+//            })
+//            .setShowCancelButton(true)
+//            .setSelectedItem(ExampleEnum.IDLE)
+//            .setTitle(getString(R.string.example_selection_2))
+//            .build()
+
 
         val exampleMultipleInput1 =
             findViewById<TextInputEditText>(R.id.example_multiple_selection_input)

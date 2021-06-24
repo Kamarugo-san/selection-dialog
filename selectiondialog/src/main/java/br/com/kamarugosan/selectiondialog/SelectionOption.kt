@@ -9,6 +9,6 @@ class SelectionOption(val index: Int, obj: Any, context: Context) {
     } else {
         obj.toString()
     }
-    val filterText: String = text.toLowerCase(Locale.getDefault()).unaccent()
+    val filterText: String by lazy { text.toLowerCase(Locale.getDefault()).unaccent() }
     var enabled: Boolean = true
 }
