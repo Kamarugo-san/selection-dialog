@@ -19,7 +19,7 @@ import br.com.kamarugosan.selectiondialog.SelectionOption
 @SuppressLint("ClickableViewAccessibility")
 class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInterface {
     private val dataSet: List<T> = builder.dataSet
-    private val selectionListener: MultipleItemSelectionListener<T> = builder.selectionListener
+    private val selectionListener: SelectionListener<T> = builder.selectionListener
     private val editText: EditText? = builder.editText
     private val clearedListener: SelectionItemClearedListener? = builder.clearedListener
     private val dialog: AlertDialog
@@ -29,8 +29,15 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
     class Builder<T>(
         internal val context: Context,
         internal val dataSet: List<T>,
-        internal val selectionListener: MultipleItemSelectionListener<T>
+        internal val selectionListener: SelectionListener<T>
     ) {
+        constructor(context: Context, dataSet: List<T>, selectionListener: (List<T>) -> Unit) :
+                this(context, dataSet, object : SelectionListener<T> {
+                    override fun onSelected(items: List<T>) {
+                        selectionListener(items)
+                    }
+                })
+
         internal var allowSearch = false
         internal var title: String? = null
         internal var selectedIndexes: List<Int> = ArrayList()
@@ -44,6 +51,13 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
                 this.editText = textInput
                 this.clearedListener = clearedListener
             }
+
+        fun bindToEditText(editText: EditText, onClearedListener: () -> Unit) =
+            bindToEditText(editText, object : SelectionItemClearedListener {
+                override fun onCleared() {
+                    onClearedListener()
+                }
+            })
 
         fun setTitle(title: String?) = apply { this.title = title }
 
@@ -220,5 +234,9 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
             )
             editText.setOnTouchListener { _, _ -> false }
         }
+    }
+
+    interface SelectionListener<T> {
+        fun onSelected(items: List<T>)
     }
 }
