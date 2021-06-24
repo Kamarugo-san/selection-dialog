@@ -14,13 +14,78 @@ import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.RecyclerView
 import java.util.*
 
-@SuppressLint("ClickableViewAccessibility")
-class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInterface {
+@SuppressLint("ClickableViewAccessibility", "InflateParams")
+class SelectionDialog<T> internal constructor(private val builder: Builder<T>) : DialogInterface {
     private val dataSet: List<T> = builder.dataSet
     private val selectionListener: SelectionListener<T> = builder.selectionListener
     private val editText: EditText? = builder.editText
     private val clearedListener: SelectionItemClearedListener? = builder.clearedListener
-    private val dialog: AlertDialog
+    private val dialog: AlertDialog by lazy {
+        val dialogView =
+            LayoutInflater.from(builder.context).inflate(R.layout.dialog_selection, null, false)
+
+        val dialogBuilder = AlertDialog.Builder(builder.context)
+            .setTitle(builder.title)
+            .setView(dialogView)
+            .setCancelable(builder.dialogCancelable)
+
+        if (builder.showCancelButton) {
+            dialogBuilder.setNeutralButton(R.string.selection_dialog_cancel_btn, null)
+        }
+
+        val recyclerView: RecyclerView =
+            dialogView.findViewById(R.id.selection_dialog_recycler_view)!!
+        recyclerView.adapter = adapter
+
+        val emptyListTv: TextView =
+            dialogView.findViewById(R.id.selection_dialog_empty_list_text_view)
+
+        if (dataSet.isEmpty()) {
+            emptyListTv.visibility = View.VISIBLE
+        }
+
+        if (builder.allowSearch) {
+            val searchView: SearchView = dialogView.findViewById(R.id.selection_dialog_search_view)
+            searchView.visibility = View.VISIBLE
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    if (builder.searchTextAsSelectionListener != null) {
+                        val searchText = query ?: ""
+                        builder.searchTextAsSelectionListener!!.onSearchTextUsedAsSelection(
+                            searchText
+                        )
+
+                        configureEditTextSelection(searchText)
+                        adapter.clearSelection()
+                        searchView.setQuery(null, false)
+
+                        dismiss()
+                    }
+
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    val remainingItemsCount = adapter.filter(newText)
+
+                    if (remainingItemsCount == 0) {
+                        emptyListTv.setText(R.string.selection_dialog_search_no_matches)
+                        emptyListTv.visibility = View.VISIBLE
+                    } else {
+                        emptyListTv.visibility = View.GONE
+                    }
+
+                    return true
+                }
+            })
+
+            if (builder.searchTextAsSelectionListener != null) {
+                emptyListTv.text = builder.searchTextAsSelectionLabel
+            }
+        }
+
+        dialogBuilder.create()
+    }
     private val adapter: SelectionAdapter
 
     class Builder<T>(
@@ -128,71 +193,6 @@ class SelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInter
             }
         })
         adapter.selectedItem = selectedItem
-
-        val dialogView =
-            LayoutInflater.from(builder.context).inflate(R.layout.dialog_selection, null, false)
-
-        val dialogBuilder = AlertDialog.Builder(builder.context)
-            .setTitle(builder.title)
-            .setView(dialogView)
-            .setCancelable(builder.dialogCancelable)
-
-        if (builder.showCancelButton) {
-            dialogBuilder.setNeutralButton(R.string.selection_dialog_cancel_btn, null)
-        }
-
-        dialog = dialogBuilder.create()
-
-        val recyclerView: RecyclerView =
-            dialogView.findViewById(R.id.selection_dialog_recycler_view)!!
-        recyclerView.adapter = adapter
-
-        val emptyListTv: TextView =
-            dialogView.findViewById(R.id.selection_dialog_empty_list_text_view)
-
-        if (dataSet.isEmpty()) {
-            emptyListTv.visibility = View.VISIBLE
-        }
-
-        if (builder.allowSearch) {
-            val searchView: SearchView = dialogView.findViewById(R.id.selection_dialog_search_view)
-            searchView.visibility = View.VISIBLE
-            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    if (builder.searchTextAsSelectionListener != null) {
-                        val searchText = query ?: ""
-                        builder.searchTextAsSelectionListener!!.onSearchTextUsedAsSelection(
-                            searchText
-                        )
-
-                        configureEditTextSelection(searchText)
-                        adapter.clearSelection()
-                        searchView.setQuery(null, false)
-
-                        dismiss()
-                    }
-
-                    return true
-                }
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    val remainingItemsCount = adapter.filter(newText)
-
-                    if (remainingItemsCount == 0) {
-                        emptyListTv.setText(R.string.selection_dialog_search_no_matches)
-                        emptyListTv.visibility = View.VISIBLE
-                    } else {
-                        emptyListTv.visibility = View.GONE
-                    }
-
-                    return true
-                }
-            })
-
-            if (builder.searchTextAsSelectionListener != null) {
-                emptyListTv.text = builder.searchTextAsSelectionLabel
-            }
-        }
 
         if (editText != null) {
             if (builder.selectedItem != null && builder.selectedItem is ToStringWithContext) {

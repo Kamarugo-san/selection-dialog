@@ -16,13 +16,89 @@ import br.com.kamarugosan.selectiondialog.R
 import br.com.kamarugosan.selectiondialog.SelectionItemClearedListener
 import br.com.kamarugosan.selectiondialog.SelectionOption
 
-@SuppressLint("ClickableViewAccessibility")
+@SuppressLint("ClickableViewAccessibility", "InflateParams")
 class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : DialogInterface {
     private val dataSet: List<T> = builder.dataSet
     private val selectionListener: SelectionListener<T> = builder.selectionListener
     private val editText: EditText? = builder.editText
     private val clearedListener: SelectionItemClearedListener? = builder.clearedListener
-    private val dialog: AlertDialog
+    private val dialog: AlertDialog by lazy {
+        val dialogView =
+            LayoutInflater.from(builder.context).inflate(R.layout.dialog_selection, null, false)
+
+        val dialogBuilder = AlertDialog.Builder(builder.context)
+            .setTitle(builder.title)
+            .setView(dialogView)
+            .setCancelable(false)
+            .setNegativeButton(R.string.selection_dialog_cancel_btn) { _, _ ->
+                if (selectedIndexes.size != adapter.selectedIndexes.size
+                    || !adapter.selectedIndexes.containsAll(selectedIndexes)
+                ) {
+                    val oldSelectedIndexes = ArrayList(adapter.selectedIndexes)
+                    adapter.selectedIndexes = ArrayList(selectedIndexes)
+
+                    // Updating the views that were deselected
+                    selectedIndexes.forEach { index ->
+                        if (!oldSelectedIndexes.contains(index)) {
+                            adapter.notifyItemChanged(index)
+                        }
+                    }
+
+                    // Updating the views that were selected
+                    oldSelectedIndexes.forEach { index ->
+                        if (!selectedIndexes.contains(index)) {
+                            adapter.notifyItemChanged(index)
+                        }
+                    }
+                }
+            }
+            .setPositiveButton(R.string.selection_dialog_confirm_btn) { _, _ ->
+                selectedIndexes = ArrayList(adapter.selectedIndexes)
+                val selected: MutableList<T> = ArrayList()
+                val selectedOptions: MutableList<SelectionOption> = ArrayList()
+                selectedIndexes.forEach {
+                    selected.add(dataSet[it])
+                    selectedOptions.add(adapter.fullDataSet[it])
+                }
+
+                configureEditTextSelection(selectedOptions)
+                selectionListener.onSelected(selected)
+            }
+
+        val recyclerView: RecyclerView =
+            dialogView.findViewById(R.id.selection_dialog_recycler_view)!!
+        recyclerView.adapter = adapter
+
+        val emptyListTv: TextView =
+            dialogView.findViewById(R.id.selection_dialog_empty_list_text_view)
+
+        if (dataSet.isEmpty()) {
+            emptyListTv.visibility = View.VISIBLE
+        }
+
+        if (builder.allowSearch) {
+            val searchView: SearchView = dialogView.findViewById(R.id.selection_dialog_search_view)
+            searchView.visibility = View.VISIBLE
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean = true
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    val remainingItemsCount = adapter.filter(newText)
+
+                    if (remainingItemsCount == 0) {
+                        emptyListTv.setText(R.string.selection_dialog_search_no_matches)
+                        emptyListTv.visibility = View.VISIBLE
+                    } else {
+                        emptyListTv.visibility = View.GONE
+                    }
+
+                    return true
+                }
+            })
+        }
+
+        dialogBuilder.create()
+    }
     private val adapter: MultipleSelectionAdapter
     private var selectedIndexes = builder.selectedIndexes
 
@@ -82,82 +158,6 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
 
         adapter = MultipleSelectionAdapter(selectionOptions)
         adapter.selectedIndexes = ArrayList(builder.selectedIndexes)
-
-        val dialogView =
-            LayoutInflater.from(builder.context).inflate(R.layout.dialog_selection, null, false)
-
-        val dialogBuilder = AlertDialog.Builder(builder.context)
-            .setTitle(builder.title)
-            .setView(dialogView)
-            .setCancelable(false)
-            .setNegativeButton(R.string.selection_dialog_cancel_btn) { _, _ ->
-                if (selectedIndexes.size != adapter.selectedIndexes.size
-                    || !adapter.selectedIndexes.containsAll(selectedIndexes)
-                ) {
-                    val oldSelectedIndexes = ArrayList(adapter.selectedIndexes)
-                    adapter.selectedIndexes = ArrayList(selectedIndexes)
-
-                    // Updating the views that were deselected
-                    selectedIndexes.forEach { index ->
-                        if (!oldSelectedIndexes.contains(index)) {
-                            adapter.notifyItemChanged(index)
-                        }
-                    }
-
-                    // Updating the views that were selected
-                    oldSelectedIndexes.forEach { index ->
-                        if (!selectedIndexes.contains(index)) {
-                            adapter.notifyItemChanged(index)
-                        }
-                    }
-                }
-            }
-            .setPositiveButton(R.string.selection_dialog_confirm_btn) { _, _ ->
-                selectedIndexes = ArrayList(adapter.selectedIndexes)
-                val selected: MutableList<T> = ArrayList()
-                val selectedOptions: MutableList<SelectionOption> = ArrayList()
-                selectedIndexes.forEach {
-                    selected.add(dataSet[it])
-                    selectedOptions.add(selectionOptions[it])
-                }
-
-                configureEditTextSelection(selectedOptions)
-                selectionListener.onSelected(selected)
-            }
-
-        dialog = dialogBuilder.create()
-
-        val recyclerView: RecyclerView =
-            dialogView.findViewById(R.id.selection_dialog_recycler_view)!!
-        recyclerView.adapter = adapter
-
-        val emptyListTv: TextView =
-            dialogView.findViewById(R.id.selection_dialog_empty_list_text_view)
-
-        if (dataSet.isEmpty()) {
-            emptyListTv.visibility = View.VISIBLE
-        }
-
-        if (builder.allowSearch) {
-            val searchView: SearchView = dialogView.findViewById(R.id.selection_dialog_search_view)
-            searchView.visibility = View.VISIBLE
-            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean = true
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    val remainingItemsCount = adapter.filter(newText)
-
-                    if (remainingItemsCount == 0) {
-                        emptyListTv.setText(R.string.selection_dialog_search_no_matches)
-                        emptyListTv.visibility = View.VISIBLE
-                    } else {
-                        emptyListTv.visibility = View.GONE
-                    }
-
-                    return true
-                }
-            })
-        }
 
         if (editText != null) {
             configureEditTextSelection(selectedItems)

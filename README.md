@@ -4,6 +4,9 @@
 # Selection Dialog
 Easily show a dialog with options for the user to choose from.
 
+## Examples
+Usage examples can be found [here](/app/src/main/java/br/com/kamarugosan/selectiondialog/example/ExampleActivity.kt).
+
 ## Adding to your project
 **Step 1:** Add the JitPack repository to your root build.gradle file
 
@@ -20,7 +23,7 @@ allprojects {
 
 ```
 dependencies {
-    implementation 'com.github.Kamarugo-san:selection-dialog:0.3.1'
+    implementation 'com.github.Kamarugo-san:selection-dialog:0.3.2'
 }
 ```
 
