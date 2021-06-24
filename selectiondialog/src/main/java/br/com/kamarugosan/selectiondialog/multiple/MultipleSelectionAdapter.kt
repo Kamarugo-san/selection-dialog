@@ -10,7 +10,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class MultipleSelectionAdapter(
-    private val fullDataSet: List<SelectionOption>
+    val fullDataSet: List<SelectionOption>
 ) :
     RecyclerView.Adapter<MultipleSelectionViewHolder>() {
     private var filteredDataSet: List<SelectionOption> = ArrayList(fullDataSet)

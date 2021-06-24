@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Selection Dialog</string>
     <string name="example_selection_1" translatable="false">Example selection 1</string>
-    <string name="example_selection_2" translatable="false">Example selection 2</string>
+    <string name="example_selection_2" translatable="false">Example selection enum</string>
     <string name="example_multiple_selection_1" translatable="false">Example multiple selection 1</string>
     <string name="string_res_example_online" translatable="false">Online</string>
     <string name="string_res_example_offline" translatable="false">Offline</string>
