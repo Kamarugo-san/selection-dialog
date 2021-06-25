@@ -4,39 +4,78 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import br.com.kamarugosan.selectiondialog.SelectionDialog
-import br.com.kamarugosan.selectiondialog.SelectionItemClearedListener
 import br.com.kamarugosan.selectiondialog.multiple.MultipleSelectionDialog
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 
+/**
+ * Here you can find examples on how to use both [SelectionDialog] and [MultipleSelectionDialog].
+ */
 class ExampleActivity : AppCompatActivity(R.layout.activity_example) {
+    private val selectedItem = ExampleObject("Ayrton", "Senna")
+    private val exampleDataSet = listOf(
+        ExampleObject("Alain", "Prost"),
+        ExampleObject("Alan", "Jones"),
+        ExampleObject("Alberto", "Ascari"),
+        selectedItem,
+        ExampleObject("Damon", "Hill"),
+        ExampleObject("Denny", "Hulme"),
+        ExampleObject("Emerson", "Fittipaldi"),
+        ExampleObject("Fernando", "Alonso"),
+        ExampleObject("Giuseppe", "Farina"),
+        ExampleObject("Graham", "Hill"),
+        ExampleObject("Jack", "Brabham"),
+        ExampleObject("Jackie", "Stewart"),
+        ExampleObject("Jacques", "Villeneuve"),
+        ExampleObject("James", "Hunt"),
+        ExampleObject("Jenson", "Button"),
+        ExampleObject("Juan", "Manuel Fangio"),
+        ExampleObject("Jim", "Clark"),
+        ExampleObject("Jochen", "Rindt"),
+        ExampleObject("Jody", "Scheckter"),
+        ExampleObject("John", "Surtees"),
+        ExampleObject("Keke", "Rosberg"),
+        ExampleObject("Kimi", "Räikkönen"),
+        ExampleObject("Lewis", "Hamilton"),
+        ExampleObject("Mario", "Andretti"),
+        ExampleObject("Michael", "Schumacher"),
+        ExampleObject("Mika", "Häkkinen"),
+        ExampleObject("Mike", "Hawthorn"),
+        ExampleObject("Nelson", "Piquet"),
+        ExampleObject("Niki", "Lauda"),
+        ExampleObject("Nigel", "Mansell"),
+        ExampleObject("Nico", "Rosberg"),
+        ExampleObject("Phil", "Hill"),
+        ExampleObject("Sebastian", "Vettel"),
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val selectedItem = ExampleObject("Joseph", "Joestar")
-        val exampleDataSet = listOf(
-            ExampleObject("AEIOU", "áàâãäéèêëiíìïîóòôõöúùûü"),
-            ExampleObject("Dio", "Brando"),
-            ExampleObject("Erina", "Pendleton"),
-            ExampleObject("Enrico", "Pucci"),
-            ExampleObject("George", "Joestar"),
-            ExampleObject("Giorno", "Giovanna"),
-            ExampleObject("Jean", "Pierre Polnareff"),
-            ExampleObject("Jonathan", "Joestar"),
-            ExampleObject("Johnny", "Joestar"),
-            ExampleObject("Josefumi", "Kujo"),
-            selectedItem,
-            ExampleObject("Josuke", "Higashikata"),
-            ExampleObject("Jotaro", "Kujo"),
-            ExampleObject("Hirose", "Kōichi"),
-            ExampleObject("Poco", ""),
-            ExampleObject("Robert", "E. O. Speedwagon"),
-            ExampleObject("Tonpetty", ""),
-            ExampleObject("Will", "A. Zeppeli"),
-            ExampleObject("Yoshikage", "Kira"),
-        )
+        // Simplest single selection dialog
+        val singleSelectionDialog =
+            SelectionDialog.Builder(this, exampleDataSet) { item, index ->
+                Toast.makeText(this@ExampleActivity, "$item - $index", Toast.LENGTH_SHORT).show()
+            }.build()
+        val singleBtn = findViewById<MaterialButton>(R.id.example_single_launch)
+        singleBtn.setOnClickListener {
+            singleSelectionDialog.show()
+        }
 
+        // Simplest multiple selection dialog
+        val multipleSelectionDialog =
+            MultipleSelectionDialog.Builder(this, exampleDataSet) { items ->
+                Toast.makeText(
+                    this@ExampleActivity, "MULTIPLE SELECTED ${items.size}", Toast.LENGTH_SHORT
+                ).show()
+            }.build()
+        val multipleBtn = findViewById<MaterialButton>(R.id.example_multiple_launch)
+        multipleBtn.setOnClickListener {
+            multipleSelectionDialog.show()
+        }
+
+        // Single selection dialog bound to EditText
         val exampleInput1 = findViewById<TextInputEditText>(R.id.example_selection_input)
-
         SelectionDialog.Builder(
             this,
             exampleDataSet
@@ -56,65 +95,46 @@ class ExampleActivity : AppCompatActivity(R.layout.activity_example) {
             }
             .build()
 
-        val exampleInput2 = findViewById<TextInputEditText>(R.id.example_selection2_input)
-        MultipleSelectionDialog.Builder(
-            this,
-            ExampleEnum.values().toList(),
-            object : MultipleSelectionDialog.SelectionListener<ExampleEnum> {
-                override fun onSelected(items: List<ExampleEnum>) {
-                    Toast.makeText(this@ExampleActivity, "MULTIPLE SELECTED", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
-        )
-            .bindToEditText(exampleInput2, object : SelectionItemClearedListener {
-                override fun onCleared() {
-                    Toast.makeText(this@ExampleActivity, "CLEARED MULTIPLE", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            })
-            .setSelectedIndexes(listOf(1, 2))
-            .setTitle(getString(R.string.example_selection_2))
-            .build()
-
-//        SelectionDialog.Builder(
-//            this,
-//            ExampleEnum.values().toList(),
-//            object : SelectionDialog.SelectionListener<ExampleEnum> {
-//                override fun onSelected(item: ExampleEnum, index: Int) {
-//                    Toast.makeText(this@ExampleActivity, item.toStringWithContext(this@ExampleActivity), Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//        )
-//            .bindToEditText(exampleInput2, object : SelectionItemClearedListener {
-//                override fun onCleared() {
-//                    Toast.makeText(this@ExampleActivity, "CLEARED", Toast.LENGTH_SHORT).show()
-//                }
-//            })
-//            .setShowCancelButton(true)
-//            .setSelectedItem(ExampleEnum.IDLE)
-//            .setTitle(getString(R.string.example_selection_2))
-//            .build()
-
-
+        // Multiple selection dialog bound to EditText
         val exampleMultipleInput1 =
             findViewById<TextInputEditText>(R.id.example_multiple_selection_input)
-        val selectedIndexes = listOf(1, 2, 3)
+        val selectedIndexes = listOf(3, 21, 32)
 
         MultipleSelectionDialog.Builder(
             this,
             exampleDataSet
-        ) {
-            Toast.makeText(this@ExampleActivity, "MULTIPLE SELECTED", Toast.LENGTH_SHORT)
+        ) { items ->
+            Toast.makeText(
+                this@ExampleActivity, "MULTIPLE SELECTED ${items.size}", Toast.LENGTH_SHORT
+            )
                 .show()
         }
-            .setTitle(getString(R.string.example_multiple_selection_1))
-            .setSelectedIndexes(selectedIndexes)
-            .allowSearch(true)
             .bindToEditText(exampleMultipleInput1) {
                 Toast.makeText(this@ExampleActivity, "CLEARED MULTIPLE", Toast.LENGTH_SHORT)
                     .show()
             }
+            .setTitle(getString(R.string.example_multiple_selection_1))
+            .setSelectedIndexes(selectedIndexes)
+            .allowSearch(true)
+            .build()
+
+        // Example of objects implementing ToStringWithContext
+        // Selection enums work for both single and multiple selection dialogs
+        val exampleInput2 = findViewById<TextInputEditText>(R.id.example_selection2_input)
+        MultipleSelectionDialog.Builder(
+            this,
+            ExampleEnum.values().toList()
+        ) { items ->
+            Toast.makeText(
+                this@ExampleActivity,
+                "MULTIPLE SELECTED ${items.size}}",
+                Toast.LENGTH_SHORT
+            )
+                .show()
+        }
+            .bindToEditText(exampleInput2) // Not allowing user to clear the selection
+            .setSelectedIndexes(listOf(1, 2))
+            .setTitle(getString(R.string.example_selection_2))
             .build()
     }
 }

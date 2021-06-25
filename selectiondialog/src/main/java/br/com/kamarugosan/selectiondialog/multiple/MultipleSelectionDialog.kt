@@ -74,6 +74,8 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
 
         if (dataSet.isEmpty()) {
             emptyListTv.visibility = View.VISIBLE
+        } else {
+            emptyListTv.setText(R.string.selection_dialog_search_no_matches)
         }
 
         if (builder.allowSearch) {
@@ -86,7 +88,6 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
                     val remainingItemsCount = adapter.filter(newText)
 
                     if (remainingItemsCount == 0) {
-                        emptyListTv.setText(R.string.selection_dialog_search_no_matches)
                         emptyListTv.visibility = View.VISIBLE
                     } else {
                         emptyListTv.visibility = View.GONE
@@ -102,11 +103,32 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
     private val adapter: MultipleSelectionAdapter
     private var selectedIndexes = builder.selectedIndexes
 
+    /**
+     * Builder for the [MultipleSelectionDialog].
+     */
     class Builder<T>(
+        /**
+         * The parent context.
+         */
         internal val context: Context,
+
+        /**
+         * The data set the user can select from.
+         */
         internal val dataSet: List<T>,
+
+        /**
+         * The listener to be called when the user makes a selection.
+         */
         internal val selectionListener: SelectionListener<T>
     ) {
+        /**
+         * Builder for the [MultipleSelectionDialog].
+         *
+         * @param context           the parent context
+         * @param dataSet           the data set the user can select from
+         * @param selectionListener the listener to be called when the user makes a selection
+         */
         constructor(context: Context, dataSet: List<T>, selectionListener: (List<T>) -> Unit) :
                 this(context, dataSet, object : SelectionListener<T> {
                     override fun onSelected(items: List<T>) {
@@ -120,27 +142,68 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
         internal var editText: EditText? = null
         internal var clearedListener: SelectionItemClearedListener? = null
 
+        /**
+         * Sets whether the [SearchView] will be shown.
+         *
+         * @param allowSearch whether or not the [SearchView] should be shown
+         */
         fun allowSearch(allowSearch: Boolean) = apply { this.allowSearch = allowSearch }
 
-        fun bindToEditText(textInput: EditText, clearedListener: SelectionItemClearedListener?) =
+        /**
+         * Binds the [MultipleSelectionDialog] to the given [EditText]. That is, the [EditText]
+         * will have an arrow icon on the right to indicate it is a selection field. When a value
+         * is selected the icon will turn into an X and allow the user to clear the selection by
+         * touching it.
+         *
+         * @param textInput       the text field to bind the events to
+         * @param clearedListener a listener for when the user clears the selection. Null if you
+         * don't want to allow the user to clear the selection.
+         */
+        fun bindToEditText(
+            textInput: EditText,
+            clearedListener: SelectionItemClearedListener? = null
+        ) =
             apply {
                 this.editText = textInput
                 this.clearedListener = clearedListener
             }
 
-        fun bindToEditText(editText: EditText, onClearedListener: () -> Unit) =
+        /**
+         * Binds the [MultipleSelectionDialog] to the given [EditText]. That is, the [EditText]
+         * will have an arrow icon on the right to indicate it is a selection field. When a value
+         * is selected the icon will turn into an X and allow the user to clear the selection by
+         * touching it.
+         *
+         * @param editText        the text field to bind the events to
+         * @param clearedListener a listener for when the user clears the selection. Null if you
+         * don't want to allow the user to clear the selection.
+         */
+        fun bindToEditText(editText: EditText, clearedListener: () -> Unit) =
             bindToEditText(editText, object : SelectionItemClearedListener {
                 override fun onCleared() {
-                    onClearedListener()
+                    clearedListener()
                 }
             })
 
+        /**
+         * Sets the [AlertDialog] title.
+         *
+         * @param title the title to be shown
+         */
         fun setTitle(title: String?) = apply { this.title = title }
 
+        /**
+         * Sets the initial selected items.
+         *
+         * @param selectedIndexes the indexes of the initial selected options
+         */
         fun setSelectedIndexes(selectedIndexes: List<Int>) = apply {
             this.selectedIndexes = ArrayList(selectedIndexes)
         }
 
+        /**
+         * Builds the [MultipleSelectionDialog].
+         */
         fun build(): MultipleSelectionDialog<T> = MultipleSelectionDialog(this)
     }
 
@@ -176,10 +239,18 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
         dialog.dismiss()
     }
 
+    /**
+     * Shows the dialog.
+     */
     fun show() {
         dialog.show()
     }
 
+    /**
+     * Clears the current selection.
+     *
+     * @param callClearedListener whether the [clearedListener] should be called
+     */
     fun clearSelection(callClearedListener: Boolean = true) {
         adapter.clearSelection()
         selectedIndexes = ArrayList()
@@ -236,7 +307,15 @@ class MultipleSelectionDialog<T> internal constructor(builder: Builder<T>) : Dia
         }
     }
 
+    /**
+     * Listener for [MultipleSelectionDialog].
+     */
     interface SelectionListener<T> {
+        /**
+         * When the user presses the confirm button.
+         *
+         * @param items a [List] of all the selected options
+         */
         fun onSelected(items: List<T>)
     }
 }
