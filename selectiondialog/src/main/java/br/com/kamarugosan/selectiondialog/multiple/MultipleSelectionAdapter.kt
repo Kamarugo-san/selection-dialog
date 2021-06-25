@@ -40,7 +40,7 @@ class MultipleSelectionAdapter(
 
     override fun onBindViewHolder(holder: MultipleSelectionViewHolder, position: Int) {
         val item = filteredDataSet[position]
-        val isSelected = selectedIndexes.contains(position)
+        val isSelected = selectedIndexes.contains(item.index)
 
         holder.bind(item, isSelected)
     }
