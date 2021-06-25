@@ -75,10 +75,17 @@ class SelectionAdapter(
 
     fun clearSelection() {
         if (selectedItem != null) {
-            val oldSelectedItem = selectedItem!!
+            var itemToUpdate: Int = selectedItem!!
+            filteredDataSet.forEachIndexed { index, selectionOption ->
+                if (selectionOption.index == selectedItem!!) {
+                    itemToUpdate = index
+                    return@forEachIndexed
+                }
+            }
+
             selectedItem = null
 
-            notifyItemChanged(oldSelectedItem)
+            notifyItemChanged(itemToUpdate)
         }
     }
 
