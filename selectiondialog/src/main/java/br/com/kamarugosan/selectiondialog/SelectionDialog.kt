@@ -329,7 +329,14 @@ class SelectionDialog<T> internal constructor(private val builder: Builder<T>) :
             if (itemToSelect == item) {
                 adapter.selectItem(index)
 
-                configureEditTextSelection(item.toString())
+                val selectionText = if (itemToSelect is ToStringWithContext) {
+                    (item as ToStringWithContext).toStringWithContext(builder.context)
+                } else {
+                    item.toString()
+                }
+
+                configureEditTextSelection(selectionText)
+
 
                 return@forEachIndexed
             }

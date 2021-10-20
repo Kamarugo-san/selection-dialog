@@ -93,7 +93,7 @@ class SelectionAdapter(
         filteredDataSet = if (filter == null || filter.isEmpty()) {
             ArrayList(fullDataSet)
         } else {
-            val clearedFilter = filter.toLowerCase(Locale.getDefault()).unaccent()
+            val clearedFilter = filter.lowercase().unaccent()
             val newFilteredDataSet: MutableList<SelectionOption> = ArrayList()
 
             var dataSetToFilter = fullDataSet
