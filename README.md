@@ -92,7 +92,7 @@ allprojects {
 
 ```
 dependencies {
-    implementation 'com.github.Kamarugo-san:selection-dialog:1.0.2'
+    implementation 'com.github.Kamarugo-san:selection-dialog:1.0.3'
 }
 ```
 
