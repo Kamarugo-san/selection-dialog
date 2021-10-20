@@ -118,9 +118,20 @@ class ExampleActivity : AppCompatActivity(R.layout.activity_example) {
             .allowSearch(true)
             .build()
 
+
+        // Example of single selection with enum implementing ToStringWithContext
+        val exampleInput2 = findViewById<TextInputEditText>(R.id.example_selection2_input)
+        val exampleDialogEnum =
+            SelectionDialog.Builder(this, ExampleEnum.values().toList()) { index, item ->
+                Toast.makeText(this@ExampleActivity, "$item - $index", Toast.LENGTH_SHORT).show()
+            }
+                .bindToEditText(exampleInput2) // Not allowing user to clear the selection
+                .setTitle(getString(R.string.example_selection_2))
+                .build()
+
         // Example of objects implementing ToStringWithContext
         // Selection enums work for both single and multiple selection dialogs
-        val exampleInput2 = findViewById<TextInputEditText>(R.id.example_selection2_input)
+        val exampleInput3 = findViewById<TextInputEditText>(R.id.example_selection3_input)
         MultipleSelectionDialog.Builder(
             this,
             ExampleEnum.values().toList()
@@ -132,9 +143,9 @@ class ExampleActivity : AppCompatActivity(R.layout.activity_example) {
             )
                 .show()
         }
-            .bindToEditText(exampleInput2) // Not allowing user to clear the selection
+            .bindToEditText(exampleInput3) // Not allowing user to clear the selection
             .setSelectedIndexes(listOf(1, 2))
-            .setTitle(getString(R.string.example_selection_2))
+            .setTitle(getString(R.string.example_selection_3))
             .build()
     }
 }

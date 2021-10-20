@@ -55,6 +55,23 @@
             android:hint="@string/example_selection_2" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/example_selection3_input_layout"
+        style="@style/Widget.TextInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/example_selection2_input_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/example_selection3_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/example_selection_3" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/example_single_launch"
         android:layout_width="wrap_content"
@@ -63,7 +80,7 @@
         android:text="@string/example_single_launch"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/example_selection2_input_layout" />
+        app:layout_constraintTop_toBottomOf="@id/example_selection3_input_layout" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/example_multiple_launch"
